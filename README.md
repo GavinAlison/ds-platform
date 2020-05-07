@@ -7,7 +7,7 @@
 
 
 
-####1.安装linux sendmail邮件服务(不需要邮件通知可跳过此步)
+#### 1.安装linux sendmail邮件服务(不需要邮件通知可跳过此步)
 
 - 安装sendmail:
 
@@ -62,12 +62,12 @@
 - 测试邮件是否可以正常发送
 
   ```shell
-  echo  '内容'  |  mail  -s  '主题'  gadeam@163.com
+  echo  '内容'  |  mail  -s  '主题'  user@163.com
   ```
 
 
 
-####2.服务部署
+#### 2.服务部署
 
 - 部分修改配置`ds-platform.sh`文件，如下
 
@@ -122,7 +122,7 @@
   replication_password=xxx
   replication_port=3306
   replication_jdbc_options=useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&zeroDateTimeBehavior=convertToNull
-  replication_schema_database=jytc_plasma_common
+  replication_schema_database=change_db
   
   #kafka服务地址，多个用逗号分隔
   kafka.bootstrap.servers=localhost:9092
@@ -131,7 +131,7 @@
   
   #filtering
   #过滤器
-  filter=exclude: *.*, include: jytc_plasma_common.*
+  filter=exclude: *.*, include: change_db.*
   
   #过滤脚本地址
   javascript=/xxx/filter.js
