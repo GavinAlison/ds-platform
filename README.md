@@ -77,7 +77,7 @@
   #接收邮箱
   readonly email_no=user@163.com
   #邮件标题
-  email_title='澧县单采血浆站maxwell服务通知'
+  email_title='maxwell服务通知'
   
   #定时监听进程,停顿时间（秒）,即每多少时间进行一次服务进程监听,默认5分钟
   readonly delay_millisecond=300
