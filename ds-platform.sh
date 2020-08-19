@@ -1,4 +1,4 @@
-#!/bin/sh  
+#!/bin/sh
 
 :<<!
 应用规约：
@@ -11,7 +11,7 @@ sendEmail=false
 #接收邮箱
 readonly email_no=user@163.com
 #邮件标题
-email_title='XXX maxwell服务通知'
+email_title='xxx maxwell服务通知'
 
 #定时监听进程,停顿时间（秒）,即每多少时间进行一次服务进程监听
 readonly delay_millisecond=300
@@ -21,9 +21,6 @@ total_count=20200
 
 #应用名ID,注意：此sh脚本全路径名不能包含此应用名,覆盖config.properties里的client_id
 export readonly APP_NAME="maxwell"
-
-#maxwell运行日志删除，默认删除
-delete_log=false
 
 #邮件附件最大值,默认10M
 email_accessory_maxsize=$((1024 * 1024 * 10))
@@ -37,7 +34,7 @@ analysisLog_later=100
 #run.sh所在目录
 readonly CURDIR="$(cd `dirname $0`; pwd)"
 #日志文件
-export readonly CONSOLE_OUTPUT_FILE=$CURDIR/logs/$APP_NAME.out
+export readonly LOG_FILE=$CURDIR/logs/MaxwellDaemon.out
 #应用相对路径
 readonly APP_DIR="maxwell-1.24.1/bin/maxwell"
 
@@ -55,21 +52,21 @@ analysisLog(){
     local error='未找到maxwell错误日志...'
 
     #存在日志
-    if test -e $CONSOLE_OUTPUT_FILE; then
+    if test -e $LOG_FILE; then
 
         #获取异常所在行
         local array=(${analysisLog_str//,/ })
         local cur_line=''
         for var in ${array[@]}
         do
-           cur_line=`grep -n "${var}" $CONSOLE_OUTPUT_FILE | tail -n 1`
+           cur_line=`grep -n "${var}" $LOG_FILE | tail -n 1`
            if [ "$cur_line" != "" ]; then
                 #行数
                 cur_line=${cur_line%%:*}
                 local line_pre=$((analysisLog_pre > cur_line ? 1 : `expr $cur_line - $analysisLog_pre`))
                 local line_later=`expr $cur_line + $analysisLog_later`
                 #获取指定长度的日志信息
-                error=`sed -n "${line_pre},${line_later}p" $CONSOLE_OUTPUT_FILE`
+                error=`sed -n "${line_pre},${line_later}p" $LOG_FILE`
                 break
             fi
         done
@@ -167,10 +164,12 @@ stop(){
 #启动
 run_app(){
     logger "start maxwell process...";
+
+    cplog $LOG_FILE
     #删除旧日志
-    if [ $delete_log = true -a -e $CONSOLE_OUTPUT_FILE ]; then
-        logger "删除旧日志$CONSOLE_OUTPUT_FILE"
-        rm -rf "$CURDIR/logs/$APP_NAME.out"
+    if [ -e $LOG_FILE ]; then
+        logger "删除旧日志$LOG_FILE"
+        echo "">$LOG_FILE
     fi
     #启动应用
     ${CURDIR}/${APP_DIR} \
@@ -205,7 +204,7 @@ start(){
             if [ $isSend = false ]; then
                 local error=$(analysisLog)
                 #发送邮件
-                send "警告：${email_title}" "maxwell服务已宕机，正在尝试重启，错误日志为：\n $error" $CONSOLE_OUTPUT_FILE
+                send "警告：${email_title}" "maxwell服务已宕机，正在尝试重启，错误日志为：\n $error" $LOG_FILE
                 if [ $? = 0 ]; then
                     isSend=true
                     logger 'maxwell宕机邮件已投递成功...'
@@ -228,14 +227,14 @@ start(){
                     firstStart=false
                 fi
                 isSend=false
-                send "通知：${email_title}" "maxwell 已重新启动成功..." $CONSOLE_OUTPUT_FILE
+                send "通知：${email_title}" "maxwell 已重新启动成功..." $LOG_FILE
             fi
             start_count=1
 
             #第一次启动，发送通知邮件
             if [ $firstStart = true ]; then
                 firstStart=false
-                send "通知：${email_title}" "maxwell 已启动成功..." $CONSOLE_OUTPUT_FILE
+                send "通知：${email_title}" "maxwell 已启动成功..." $LOG_FILE
             fi
         fi
 
@@ -245,6 +244,18 @@ start(){
 
 restart() {
     start;
+}
+
+##保留日志
+cplog(){
+    local logfile=$1
+    local log_dir=${logfile%/*}
+    if [ -e $logfile ]; then
+        local date=`date '+%Y-%m-%d'`
+        local cplog="$logfile.$date"
+        logger "$logfile copy to $cplog"
+        cat $logfile >> $cplog
+    fi
 }
 
 logger(){
