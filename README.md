@@ -1,7 +1,7 @@
 # ds-platform
 环境要求：jdk1.8+
 
-​		本maxwell在原有的基础上经过封装，已具备maxwell 宕机重启，以及宕机时发送邮件通知相关人员，部署过程如下：
+本程序基于[maxwell](http://maxwells-daemon.io/),在原有的基础上经过封装进行监控，已具备maxwell宕机重启，以及宕机时发送邮件通知相关人员，部署过程如下：
 
 > 需要邮件通知，邮件通知需要部署maxwell的服务器具备访问外网的能力，即能ping通：[smtp.163.com](http://smtp.163.com/)， 且请先安装邮件发送服务：
 
@@ -143,4 +143,4 @@
   nohup ./ds-platform.sh start &
   ```
 
-> maxwell 日志路径： `/xxxx/ds-platform/logs/maxwell.out`
+> maxwell 日志路径： `/home/jysys/ds-platform/logs/MaxwellDaemon.out`
